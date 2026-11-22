@@ -204,15 +204,10 @@ function jsonEdit(v: unknown): Edit | null {
     const line = o.insert_line;
     const add = patchLines(o.new_str);
     return (tree) => {
-      const before = exists(tree);
-      const nl = before.indexOf('\n');
-      const br = nl > 0 && before[nl - 1] === '\r' ? '\r\n' : '\n';
-      const lines = before === '' ? [] : before.split(br);
-      const final = before !== '' && before.endsWith(br);
-      if (final) lines.pop();
-      if (line < 0 || line > lines.length) throw new Fail('no-match', p);
-      lines.splice(line, 0, ...add);
-      tree.now.set(p, lines.length === 0 ? '' : lines.join(br) + (final ? br : ''));
+      const st = splitFile(exists(tree));
+      if (line < 0 || line > st.lines.length) throw new Fail('no-match', p);
+      st.lines.splice(line, 0, ...add);
+      tree.now.set(p, joinFile(st));
     };
   }
   return null;
